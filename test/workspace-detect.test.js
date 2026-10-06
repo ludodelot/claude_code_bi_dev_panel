@@ -106,3 +106,9 @@ test('describeWorkspace reports nothing for a plain folder', () =>
     assert.equal(ws.githubSlug, null)
     assert.equal(ws.hasPbi, false)
   }))
+
+test('findRepoRoot ignores relative paths instead of matching the current folder', () => {
+  assert.equal(W.findRepoRoot('.'), null)
+  assert.equal(W.findRepoRoot('some/relative/dir'), null)
+  assert.equal(W.findRepoRoot(''), null)
+})

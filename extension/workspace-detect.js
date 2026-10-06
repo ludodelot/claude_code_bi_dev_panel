@@ -30,6 +30,8 @@ const isDir = p => {
 
 // Walk up from a file or folder until a folder containing .git is found.
 function findRepoRoot(start) {
+  // A relative path would be resolved against the current folder and could match an unrelated repository.
+  if (!start || !path.isAbsolute(start)) return null
   let dir = start
   for (let i = 0; i < 40 && dir; i += 1) {
     if (fs.existsSync(path.join(dir, '.git'))) return dir
