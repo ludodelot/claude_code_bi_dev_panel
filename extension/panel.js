@@ -2,7 +2,7 @@ const crypto = require('crypto')
 const fs = require('fs')
 const path = require('path')
 
-const SCRIPT_FILES = ['icons.js', 'format.js', 'analytics.js', 'charts.js', 'agents-view.js', 'flow-view.js', 'inuse-view.js', 'webview.js']
+const SCRIPT_FILES = ['icons.js', 'format.js', 'analytics.js', 'charts.js', 'agents-view.js', 'inuse-view.js', 'webview.js']
 const STYLE_FILES = ['panel.css', 'panel-extra.css']
 const TICK_COUNT = 60
 const TOKEN_SLOTS = 4
@@ -113,7 +113,6 @@ const navHtml = () =>
   NAV_ITEMS.map(n => `<a href="#${n.id}" data-sec="${n.id}">${icon(n.ico)}<span>${n.title}</span></a>`).join('') +
   '</nav>'
 
-const FLOW_LEGEND = `<div class="chips flow-legend"><span class="chip ok">${icon('check')}in sync</span><span class="chip warn">${icon('alert')}needs attention</span><span class="chip touched-chip">${icon('sparkles')}touched by Claude (10 min)</span><span class="chip muted-chip">not found</span></div>`
 
 const AGENT_CARD = `<div class="card agents"><div class="head"><span class="g-ico">${icon('sparkles')}</span><span class="label">Subagents</span><span class="count" id="agentCount">0</span></div><ul id="agentList" class="a-list"></ul></div>`
 
@@ -151,7 +150,6 @@ const BODY = `
       ${kpi('kSession', 'timer', 'Session', '--s4', KPI_SPARK)}
     </section>
 
-    ${section('branch', 'Workflow map', `<div class="tabs" id="flowTabs" hidden></div><div class="card flow"><svg id="flowSvg" viewBox="0 0 900 400" role="img" aria-label="Workflow map from local folder to Git and GitHub, and from the Power BI project to its models and reports"></svg>${FLOW_LEGEND}</div>`)}
     ${section('sparkles', 'Agents &amp; tasks', `<section class="grid4 agent-kpis">${kpi('kRun', 'sparkles', 'Agents running', '--s3', '')}${kpi('kAgBurn', 'flame', 'Burned by agents', '--s2', '')}${kpi('kTop', 'trend', 'Heaviest task', '--s1', '')}${kpi('kTasks', 'file', 'Tasks this session', '--s4', '')}</section><section class="grid2 split2">${AGENT_CARD}${BURN_CARD}</section>`)}
     ${section('activity', 'Plan limits', `<section class="grid3">${gauge('gF', '5-hour limit', 'clock')}${gauge('gS', '7-day limit', 'calendar')}${gauge('gC', 'Context window', 'layers')}</section>`)}
     ${section('flame', 'Burn rate', `<section class="grid2">${pace('paceF', '5-hour window', 'clock')}${pace('paceS', '7-day window', 'calendar')}</section>`)}

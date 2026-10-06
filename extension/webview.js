@@ -412,7 +412,6 @@ function render() {
   setGauge('gC', typeof s.contextPercent === 'number' ? s.contextPercent : null, 'model window')
   renderKpis(s)
   renderInUse(model.activity)
-  renderFlow(s)
   renderAgents(model.activity)
   renderPace('five', 'paceF', s)
   renderPace('seven', 'paceS', s)

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.1
+
+### Removed
+- The animated Workflow map. **In use now** shows the same repo and Power BI facts without assuming a Git-centred workflow.
+
 ## 0.4.0
 
 ### Added

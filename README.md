@@ -13,7 +13,6 @@ A live dashboard for [Claude Code](https://claude.com/claude-code) inside VS Cod
 | **Status bar** | `5h 68% · 7d 31% · ctx 47%` plus `$(organization) N` while subagents are running. Turns amber/red near the limits. |
 | **In use now** | The Git repo, branch, GitHub remote and Power BI project (PBIP, models, reports) each recent Claude Code session is working on, detected from its transcript. |
 | **KPI tiles** | API-equivalent value and $/hour, tokens processed (stacked bar), cache hit rate, session time. |
-| **Workflow map** | Animated SVG flow: **Local folder → Git → GitHub** and **PBIP → Semantic models → Reports**. Nodes glow when Claude touched them in the last 10 minutes. |
 | **Agents & tasks** | Subagents running right now (live timer, current tool call), finished and idle ones, plus **Top token burners** ranked across agents and prompts. |
 | **Plan limits** | 5-hour, 7-day and context gauges with status badges. |
 | **Burn rate** | Usage over each window vs. an even pace, a projection, and "hits 100% in ~X" warnings. Hover for exact values. |
@@ -43,7 +42,7 @@ Copy `mod/usage-band` to `~/.claude/skills/usage-band` (on Windows: `%USERPROFIL
 ```bash
 cd extension
 npx @vscode/vsce package --allow-missing-repository --no-dependencies
-code --install-extension claude-usage-bar-0.4.0.vsix
+code --install-extension claude-usage-bar-0.4.1.vsix
 ```
 
 Reload VS Code. The item appears at the right of the status bar. Click it, or run **Claude Code: Open usage dashboard**.
@@ -78,7 +77,6 @@ extension/
   analytics.js    pace, projections, insights
   charts.js       SVG charts with hover tooltips, donut
   agents-view.js  subagents and token-burner ranking
-  flow-view.js    Git / Power BI workflow map
   webview.js      rendering and live updates
 mod/usage-band/   the Claude Code mod
 test/             node:test suites (analytics, activity, format, CSV, panel)
