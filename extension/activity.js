@@ -1,6 +1,7 @@
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
+const { describeWorkspace, findRepoRoot, pbiFromPath } = require('./workspace-detect')
 
 const PROJECTS_DIR = path.join(os.homedir(), '.claude', 'projects')
 const RECENT_MS = 6 * 3600 * 1000
@@ -10,6 +11,8 @@ const MAX_AGENTS = 30
 const MAX_TASKS_PER_SESSION = 12
 const TITLE_CHARS = 72
 const TARGET_CHARS = 48
+const MAX_TOUCHED_FILES = 40
+const WORKSPACE_TTL_MS = 30 * 1000
 const NON_PROMPT_PREFIXES = ['<task-notification', '<command', '<system-reminder', '<local-command', '<user-prompt']
 
 const tails = new Map()
@@ -135,9 +138,27 @@ function isRealPrompt(entry, text) {
   )
 }
 
-const initSession = () => ({ title: '', tasks: [], seen: {}, tokens: emptyTokens() })
+const initSession = () => ({ title: '', cwd: '', files: [], tasks: [], seen: {}, tokens: emptyTokens() })
 
-function reduceSession(acc, entry) {
+const normalizePath = p => String(p).replace(/^([a-z]):/, (_, d) => d.toUpperCase() + ':')
+
+const touchedFile = block => {
+  const input = block.input || {}
+  const file = input.file_path || input.notebook_path
+  return typeof file === 'string' && file ? normalizePath(file) : null
+}
+
+// Track the folder Claude runs in and the files it touched, newest last, without duplicates.
+function withLocation(acc, entry) {
+  const cwd = entry.cwd ? normalizePath(entry.cwd) : acc.cwd
+  const seen = toolBlocks(entry).map(touchedFile).filter(Boolean)
+  if (!seen.length) return cwd === acc.cwd ? acc : { ...acc, cwd }
+  const files = [...acc.files.filter(f => !seen.includes(f)), ...seen].slice(-MAX_TOUCHED_FILES)
+  return { ...acc, cwd, files }
+}
+
+function reduceSession(prev, entry) {
+  const acc = withLocation(prev, entry)
   if (entry.type === 'ai-title' && entry.aiTitle) return { ...acc, title: entry.aiTitle }
   if (entry.type === 'user') {
     const text = promptText(entry)
@@ -227,6 +248,31 @@ function pruneTails() {
   for (const file of tails.keys()) if (!touched.has(file)) tails.delete(file)
 }
 
+// Prefer the newest touched file that lives in a repo or Power BI project; fall back to the session folder.
+// Returns the project root (not a nested folder) so the panel shows what the user would recognise.
+function pickWorkDir(cwd, files) {
+  for (const file of [...files].reverse()) {
+    const pbi = pbiFromPath(file)
+    if (pbi) return { dir: findRepoRoot(pbi.dir) || pbi.dir, files }
+    const repo = findRepoRoot(path.dirname(file))
+    if (repo) return { dir: repo, files }
+  }
+  return { dir: cwd, files }
+}
+
+const workspaceCache = new Map()
+
+function workspaceFor(cwd, files, now) {
+  if (!cwd) return null
+  const { dir } = pickWorkDir(cwd, files)
+  const key = dir + '|' + files.length
+  const cached = workspaceCache.get(key)
+  if (cached && now - cached.at < WORKSPACE_TTL_MS) return cached.value
+  const value = describeWorkspace(dir, files)
+  workspaceCache.set(key, { at: now, value })
+  return { ...value, cwd }
+}
+
 function scanActivity() {
   const now = Date.now()
   touched = new Set()
@@ -237,7 +283,7 @@ function scanActivity() {
     const acc = tailOf(s.file, initSession, reduceSession)
     const title = acc.title || 'Untitled session'
     const tasks = acc.tasks.slice(-MAX_TASKS_PER_SESSION).map(t => ({ ...t, burned: burned(t.tokens) }))
-    sessions.push({ id: s.sessionId, title, active: index === 0, latest: s.latest, tasks })
+    sessions.push({ id: s.sessionId, title, active: index === 0, latest: s.latest, tasks, workspace: workspaceFor(acc.cwd, acc.files, now) })
     agents.push(...collectAgents(s.sessionId, s.dir, title, now))
   })
   pruneTails()
@@ -245,4 +291,4 @@ function scanActivity() {
   return { scannedAt: now, sessions, agents: agents.slice(0, MAX_AGENTS).map(a => ({ ...a, burned: burned(a.tokens) })) }
 }
 
-module.exports = { scanActivity, reduceAgent, reduceSession, initAgent, initSession, promptText, isRealPrompt, describeTool, agentStatus, burned, clip, readAppended, tailOf }
+module.exports = { scanActivity, pickWorkDir, reduceAgent, reduceSession, initAgent, initSession, promptText, isRealPrompt, describeTool, agentStatus, burned, clip, readAppended, tailOf }

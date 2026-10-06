@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0
+
+### Added
+- **In use now**: detects, per recent Claude Code session, the Git repo (name, branch, GitHub remote) and the Power BI project (PBIP, semantic models, reports) it is working on. It reads the session transcripts, so it works for every window on the account and does not depend on the mod. Sessions with no repo or Power BI project say so instead of showing errors.
+- Status bar tooltip shows the detected repo and Power BI project.
+- Worktree and submodule aware Git detection (no git process is spawned).
+
 ## 0.3.0
 
 ### Added

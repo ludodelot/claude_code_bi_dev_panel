@@ -154,3 +154,11 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
   html { scroll-behavior: auto; }
   .logo, body::before { animation: none; }
 }
+
+/* In use now */
+.inuse-grid { display: grid; gap: 14px; }
+.inuse { display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin-bottom: 0; }
+.inuse .project-top { flex-wrap: wrap; }
+.inuse .project-top .repo { flex: 1; min-width: 0; }
+.inuse .chips { margin-top: 0; }
+.inuse.live { border-color: color-mix(in srgb, var(--ok) 45%, var(--card-border)); }

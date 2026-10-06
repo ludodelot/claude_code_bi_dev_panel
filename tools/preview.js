@@ -14,7 +14,7 @@ const fr=new Date(now+2.2*3600000).toISOString(),sr=new Date(now+4.5*86400000).t
 const history=[]
 for(let i=0;i<60;i++){const t=now-(95-i*1.6)*60000;const k=i/59;history.push({t,f:Math.round(8+k*60+Math.sin(i/4)*2),fr,s:Math.round(20+k*11),sr,c:Math.round(5+k*42+Math.sin(i/3)*3),u:+(k*2.37).toFixed(2)})}
 const T=(i,o,cr,cw)=>({input:i,output:o,cacheRead:cr,cacheWrite:cw})
-const activity={scannedAt:now,sessions:[{id:'s1',title:'Sales dashboard refactor',active:true,latest:now,tasks:[
+const activity={scannedAt:now,sessions:[{id:'s1',title:'Sales dashboard refactor',active:true,latest:now,workspace:{dir:'C:/x/sales-dashboard',cwd:'C:/x',repoRoot:'C:/x/sales-dashboard',repoName:'sales-dashboard',branch:'main',githubSlug:'ludovic/sales-dash',pbipDir:'C:/x/sales-dashboard',pbip:['Sales.pbip'],models:['Sales.SemanticModel'],reports:['Sales.Report'],hasPbi:true},tasks:[
  {id:'t1',t:now-80*60000,title:'Add margin KPI measures to the Sales semantic model',tokens:T(40,5200,820000,61000),burned:66240,tools:22},
  {id:'t2',t:now-50*60000,title:'Fix the broken relationship between Dim Date and Fact Sales',tokens:T(12,2100,410000,30000),burned:32112,tools:11},
  {id:'t3',t:now-20*60000,title:'Redesign the usage panel with charts and flow map',tokens:T(30,9800,1420000,95000),burned:104830,tools:41}]}],

@@ -84,3 +84,27 @@ test('readAppended returns only new complete lines and resets on truncation', ()
     fs.rmSync(dir, { recursive: true, force: true })
   }
 })
+
+const toolUse = (id, file) => ({
+  type: 'assistant',
+  uuid: id,
+  timestamp: '2026-01-01T10:00:00Z',
+  cwd: 'c:/work',
+  message: { id, usage: {}, content: [{ type: 'tool_use', name: 'Edit', input: { file_path: file } }] },
+})
+
+test('reduceSession records the working folder and touched files without duplicates', () => {
+  const entries = [toolUse('a', 'c:/work/x.py'), toolUse('b', 'c:/work/y.py'), toolUse('c', 'c:/work/x.py')]
+  const acc = entries.reduce(X.reduceSession, X.initSession())
+  assert.equal(acc.cwd, 'C:/work')
+  assert.deepEqual(acc.files, ['C:/work/y.py', 'C:/work/x.py'])
+})
+
+test('pickWorkDir prefers the project root of the newest touched Power BI file', () => {
+  const file = 'C:/bi/Sales.SemanticModel/definition/tables/Fact.tmdl'
+  assert.equal(X.pickWorkDir('C:/home', [file]).dir, 'C:/bi')
+})
+
+test('pickWorkDir falls back to the session folder when no file is in a repo or project', () => {
+  assert.equal(X.pickWorkDir('C:/home', ['C:/nowhere-xyz/a.py']).dir, 'C:/home')
+})

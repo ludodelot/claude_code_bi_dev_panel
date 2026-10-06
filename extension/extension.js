@@ -155,6 +155,13 @@ const projectLine = w => {
   return `\n\n📁 \`${repo}${branch}\`${dirty} — \`${w.pbipDir || w.dir}\``
 }
 
+const detectedLine = w => {
+  const repo = w.githubSlug || w.repoName || 'no git repo'
+  const branch = w.branch ? '@' + w.branch : ''
+  const pbi = w.hasPbi ? ' · Power BI: ' + [...w.pbip, ...w.models, ...w.reports].slice(0, 2).join(', ') : ' · no Power BI project'
+  return `\n\n🔎 In use: \`${repo}${branch}\`${pbi}`
+}
+
 const tooltipFor = s => {
   const md = new vscode.MarkdownString(undefined, true)
   const now = Date.now()
@@ -169,6 +176,8 @@ const tooltipFor = s => {
   )
   md.appendMarkdown(`- Session: ${formatSpan(now - s.startedAt)}`)
   for (const w of s.workspaces || []) md.appendMarkdown(projectLine(w))
+  const live = activity && activity.sessions.find(x => x.active && x.workspace)
+  if (live) md.appendMarkdown(detectedLine(live.workspace))
   md.appendMarkdown('\n\n_Click to open the dashboard_')
   return md
 }

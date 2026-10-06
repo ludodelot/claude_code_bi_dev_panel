@@ -2,7 +2,7 @@ const crypto = require('crypto')
 const fs = require('fs')
 const path = require('path')
 
-const SCRIPT_FILES = ['icons.js', 'format.js', 'analytics.js', 'charts.js', 'agents-view.js', 'flow-view.js', 'webview.js']
+const SCRIPT_FILES = ['icons.js', 'format.js', 'analytics.js', 'charts.js', 'agents-view.js', 'flow-view.js', 'inuse-view.js', 'webview.js']
 const STYLE_FILES = ['panel.css', 'panel-extra.css']
 const TICK_COUNT = 60
 const TOKEN_SLOTS = 4
@@ -141,6 +141,8 @@ const BODY = `
     </header>
 
     <!--NAV-->
+
+    ${section('sparkles', 'In use now', '<section id="inUse" class="inuse-grid"></section>')}
 
     <section class="grid4 kpis">
       ${kpi('kCost', 'dollar', 'API-equivalent value', '--s1', KPI_SPARK)}
