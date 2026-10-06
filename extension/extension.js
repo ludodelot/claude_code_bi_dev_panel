@@ -5,16 +5,19 @@ const path = require('path')
 const { execFileSync } = require('child_process')
 const { panelHtml } = require('./panel')
 const { scanActivity } = require('./activity')
+const { historyToCsv } = require('./history-csv')
+const { span: formatSpan, tokens: formatTokens } = require('./format')
 
 const DATA_DIR = path.join(os.homedir(), '.claude', 'usage-band')
 const STATE_FILE = path.join(DATA_DIR, 'state.json')
 const HISTORY_FILE = path.join(DATA_DIR, 'history.json')
-const POLL_MS = 2000
+const DEFAULT_POLL_MS = 2000
+const MIN_POLL_MS = 1000
 const ACTIVE_MS = 20000
 const STALE_MS = 15 * 60 * 1000
 const BAR_WARN_AT = 85
 const BAR_HOT_AT = 95
-const NOTIFY_AT = [80, 95]
+const DEFAULT_NOTIFY_AT = [80, 95]
 const MIN_SAMPLE_GAP_MS = 60 * 1000
 const MAX_SAMPLES = 5000
 const ACTIVITY_MS = 3000
@@ -29,15 +32,16 @@ let activityKey = ''
 let lastActivityScan = 0
 const notified = new Set()
 
-const formatSpan = ms => {
-  const minutes = Math.max(0, Math.round(ms / 60000))
-  const hours = Math.floor(minutes / 60)
-  if (hours >= 48) return `${Math.floor(hours / 24)}d ${hours % 24}h`
-  return hours >= 1 ? `${hours}h ${String(minutes % 60).padStart(2, '0')}m` : `${minutes}m`
+const settings = () => {
+  const cfg = vscode.workspace.getConfiguration('claudeUsageBar')
+  const poll = Number(cfg.get('pollIntervalMs'))
+  const notify = cfg.get('notifyAt')
+  return {
+    pollMs: Number.isFinite(poll) ? Math.max(MIN_POLL_MS, poll) : DEFAULT_POLL_MS,
+    notifyAt: Array.isArray(notify) ? notify.filter(n => Number.isFinite(n) && n > 0 && n <= 100) : DEFAULT_NOTIFY_AT,
+    notificationsOn: cfg.get('notifications') !== false,
+  }
 }
-
-const formatTokens = n =>
-  n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : `${n}`
 
 const userName = () => {
   const configured = vscode.workspace.getConfiguration('claudeUsageBar').get('userName')
@@ -189,8 +193,10 @@ const updateBar = item => {
 }
 
 const notifyThresholds = s => {
+  const { notifyAt, notificationsOn } = settings()
+  if (!notificationsOn) return
   for (const l of s.limits || []) {
-    for (const threshold of NOTIFY_AT) {
+    for (const threshold of notifyAt) {
       const key = `${l.kind}|${l.resetsAt}|${threshold}`
       if (l.percentUsed < threshold || notified.has(key)) continue
       notified.add(key)
@@ -228,6 +234,35 @@ const openPanel = () => {
   })
 }
 
+const exportHistory = async () => {
+  if (!history.length) {
+    vscode.window.showInformationMessage('Claude Code: no usage history recorded yet.')
+    return
+  }
+  const target = await vscode.window.showSaveDialog({
+    defaultUri: vscode.Uri.file(path.join(os.homedir(), 'claude-usage-history.csv')),
+    filters: { CSV: ['csv'] },
+  })
+  if (!target) return
+  try {
+    await vscode.workspace.fs.writeFile(target, Buffer.from(historyToCsv(history), 'utf8'))
+    vscode.window.showInformationMessage('Claude Code: exported ' + history.length + ' samples.')
+  } catch (error) {
+    vscode.window.showErrorMessage('Claude Code: could not export history. ' + error.message)
+  }
+}
+
+const tick = item => () => {
+  const stateChanged = loadState()
+  const activityChanged = refreshActivity()
+  if (stateChanged) {
+    recordSample(state)
+    notifyThresholds(state)
+  }
+  if (stateChanged || activityChanged) postToPanel()
+  updateBar(item)
+}
+
 function activate(context) {
   const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100)
   item.command = 'claudeUsageBar.open'
@@ -235,23 +270,26 @@ function activate(context) {
   if (loadState()) recordSample(state)
   updateBar(item)
   item.show()
-
   refreshActivity()
-  const timer = setInterval(() => {
-    const stateChanged = loadState()
-    const activityChanged = refreshActivity()
-    if (stateChanged) {
-      recordSample(state)
-      notifyThresholds(state)
-    }
-    if (stateChanged || activityChanged) postToPanel()
-    updateBar(item)
-  }, POLL_MS)
+
+  let timer
+  const startTimer = () => {
+    clearInterval(timer)
+    timer = setInterval(tick(item), settings().pollMs)
+  }
+  startTimer()
 
   context.subscriptions.push(
     item,
     { dispose: () => clearInterval(timer) },
+    vscode.workspace.onDidChangeConfiguration(event => {
+      if (event.affectsConfiguration('claudeUsageBar')) {
+        startTimer()
+        postToPanel()
+      }
+    }),
     vscode.commands.registerCommand('claudeUsageBar.open', openPanel),
+    vscode.commands.registerCommand('claudeUsageBar.exportHistory', exportHistory),
   )
 }
 

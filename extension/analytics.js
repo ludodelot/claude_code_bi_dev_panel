@@ -1,3 +1,6 @@
+// In the webview format.js runs first and declares Format; in Node we require it.
+const fmt = typeof Format !== 'undefined' ? Format : require('./format')
+
 const WARN_AT = 60
 const HOT_AT = 85
 const ACTIVE_MS = 20000
@@ -16,21 +19,9 @@ const LIMIT_NAME = { five: '5-hour', seven: '7-day' }
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n))
 
 const toneFor = p => (p >= HOT_AT ? 'hot' : p >= WARN_AT ? 'warn' : 'ok')
-const colorFor = p => ({ hot: '#f85149', warn: '#d29922', ok: '#3fb950' })[toneFor(p)]
+const TONE_COLOR = { hot: 'var(--hot)', warn: 'var(--warn)', ok: 'var(--ok)' }
+const colorFor = p => TONE_COLOR[toneFor(p)]
 
-const span = ms => {
-  const m = Math.max(0, Math.round(ms / 60000))
-  const h = Math.floor(m / 60)
-  if (h >= 48) return Math.floor(h / 24) + 'd ' + (h % 24) + 'h'
-  return h >= 1 ? h + 'h ' + String(m % 60).padStart(2, '0') + 'm' : m + 'm'
-}
-
-const tokens = n => (n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? Math.round(n / 1e3) + 'k' : String(Math.round(n)))
-const money = n => '$' + n.toFixed(2)
-const percent = n => Math.round(n) + '%'
-const clock = ms => new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-const dayClock = ms => new Date(ms).toLocaleDateString([], { weekday: 'short' }) + ' ' + clock(ms)
-const plural = (n, word) => n + ' ' + word + (n === 1 ? '' : 's')
 
 const limitOf = (state, kind) => (state.limits || []).find(l => l.kind === LIMIT_KIND[kind])
 
@@ -107,7 +98,7 @@ function paceInsight(kind, info) {
       icon: 'flame',
       tone: eta < HOUR_MS ? 'hot' : 'warn',
       title: name + ' may run out',
-      text: 'At the current pace you hit 100% in about ' + span(eta) + ', before it resets.',
+      text: 'At the current pace you hit 100% in about ' + fmt.span(eta) + ', before it resets.',
     }
   }
   if (info.slope > 0) {
@@ -142,7 +133,7 @@ function contextInsight(percentUsed) {
 function costInsight(state) {
   const rate = costPerHour(state)
   if (rate === null) return null
-  return { icon: 'dollar', tone: 'info', title: 'API-equivalent burn', text: 'About ' + money(rate) + ' per hour, ' + money(state.usd) + ' this session.' }
+  return { icon: 'dollar', tone: 'info', title: 'API-equivalent burn', text: 'About ' + fmt.money(rate) + ' per hour, ' + fmt.money(state.usd) + ' this session.' }
 }
 
 function buildInsights(history, state) {
@@ -154,4 +145,12 @@ function buildInsights(history, state) {
     contextInsight(state.contextPercent),
     costInsight(state),
   ].filter(Boolean)
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = {
+    toneFor, colorFor, clamp, limitOf, pointsFor, slopeOf, paceInfo, tokenParts, cacheHitRate,
+    sessionSamples, costPerHour, paceInsight, cacheInsight, contextInsight, costInsight, buildInsights,
+    HOT_AT, WARN_AT,
+  }
 }

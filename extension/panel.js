@@ -2,7 +2,7 @@ const crypto = require('crypto')
 const fs = require('fs')
 const path = require('path')
 
-const SCRIPT_FILES = ['icons.js', 'analytics.js', 'charts.js', 'agents-view.js', 'flow-view.js', 'webview.js']
+const SCRIPT_FILES = ['icons.js', 'format.js', 'analytics.js', 'charts.js', 'agents-view.js', 'flow-view.js', 'webview.js']
 const STYLE_FILES = ['panel.css', 'panel-extra.css']
 const TICK_COUNT = 60
 const TOKEN_SLOTS = 4
@@ -98,8 +98,20 @@ const LOGO = `
 const ECG = `
   <svg class="ecg" viewBox="0 0 120 24" aria-hidden="true"><path d="M0 12 H34 l4-9 6 18 5-14 3 5 H120"/></svg>`
 
-const section = (ico, title, body) =>
-  `<h2><span class="h-ico">${icon(ico)}</span>${title}<span class="rule"></span></h2>${body}`
+const NAV_ITEMS = []
+
+const slug = title => title.toLowerCase().replace(/&amp;/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
+const section = (ico, title, body) => {
+  const id = 'sec-' + slug(title)
+  NAV_ITEMS.push({ id, title, ico })
+  return `<h2 id="${id}"><span class="h-ico">${icon(ico)}</span>${title}<span class="rule"></span></h2>${body}`
+}
+
+const navHtml = () =>
+  '<nav class="toc" aria-label="Dashboard sections">' +
+  NAV_ITEMS.map(n => `<a href="#${n.id}" data-sec="${n.id}">${icon(n.ico)}<span>${n.title}</span></a>`).join('') +
+  '</nav>'
 
 const FLOW_LEGEND = `<div class="chips flow-legend"><span class="chip ok">${icon('check')}in sync</span><span class="chip warn">${icon('alert')}needs attention</span><span class="chip touched-chip">${icon('sparkles')}touched by Claude (10 min)</span><span class="chip muted-chip">not found</span></div>`
 
@@ -123,10 +135,12 @@ const BODY = `
         </div>
       </div>
       <div class="hero-side">
-        <div id="live" class="live">${ECG}<span class="dot"></span><span id="liveText"></span></div>
+        <div id="live" class="live" role="status" aria-live="polite">${ECG}<span class="dot"></span><span id="liveText"></span></div>
         <div id="sub" class="muted"></div>
       </div>
     </header>
+
+    <!--NAV-->
 
     <section class="grid4 kpis">
       ${kpi('kCost', 'dollar', 'API-equivalent value', '--s1', KPI_SPARK)}
@@ -155,7 +169,7 @@ function panelHtml() {
 <meta http-equiv="Content-Security-Policy" content="${csp}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>${styles}</style></head>
-<body>${BODY}<script nonce="${nonce}">${script}</script></body></html>`
+<body>${BODY.replace('<!--NAV-->', navHtml())}<script nonce="${nonce}">${script}</script></body></html>`
 }
 
 module.exports = { panelHtml }

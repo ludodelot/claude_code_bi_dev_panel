@@ -13,6 +13,7 @@ const TARGET_CHARS = 48
 const NON_PROMPT_PREFIXES = ['<task-notification', '<command', '<system-reminder', '<local-command', '<user-prompt']
 
 const tails = new Map()
+let touched = new Set()
 
 const emptyTokens = () => ({ input: 0, output: 0, cacheRead: 0, cacheWrite: 0 })
 
@@ -76,6 +77,7 @@ function readAppended(file, state) {
 }
 
 function tailOf(file, init, reduce) {
+  touched.add(file)
   let state = tails.get(file)
   if (!state) {
     state = { offset: 0, partial: '', init, acc: init() }
@@ -220,8 +222,14 @@ function recentSessions(now) {
   })
 }
 
+// Drop cached readers for transcripts that fell out of the scan window so memory stays bounded.
+function pruneTails() {
+  for (const file of tails.keys()) if (!touched.has(file)) tails.delete(file)
+}
+
 function scanActivity() {
   const now = Date.now()
+  touched = new Set()
   const found = recentSessions(now).sort((a, b) => b.latest - a.latest).slice(0, MAX_SESSIONS)
   const sessions = []
   const agents = []
@@ -232,8 +240,9 @@ function scanActivity() {
     sessions.push({ id: s.sessionId, title, active: index === 0, latest: s.latest, tasks })
     agents.push(...collectAgents(s.sessionId, s.dir, title, now))
   })
+  pruneTails()
   agents.sort((a, b) => (b.last || 0) - (a.last || 0))
   return { scannedAt: now, sessions, agents: agents.slice(0, MAX_AGENTS).map(a => ({ ...a, burned: burned(a.tokens) })) }
 }
 
-module.exports = { scanActivity }
+module.exports = { scanActivity, reduceAgent, reduceSession, initAgent, initSession, promptText, isRealPrompt, describeTool, agentStatus, burned, clip, readAppended, tailOf }

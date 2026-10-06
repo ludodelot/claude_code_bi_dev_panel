@@ -20,7 +20,7 @@ A live dashboard for [Claude Code](https://claude.com/claude-code) inside VS Cod
 | **Session trends** | Context and cost over the current session. |
 | **Projects & changes** | Repos, branches, uncommitted/ahead/behind counts, Power BI models/reports and a feed of edits. |
 
-Light and dark themes follow VS Code. Animations respect `prefers-reduced-motion`.
+A sticky section menu highlights where you are. Light, dark and high-contrast themes follow VS Code, and status colors come from your theme. Animations respect `prefers-reduced-motion`.
 
 ## How it works
 
@@ -42,16 +42,26 @@ Copy `mod/usage-band` to `~/.claude/skills/usage-band` (on Windows: `%USERPROFIL
 ```bash
 cd extension
 npx @vscode/vsce package --allow-missing-repository --no-dependencies
-code --install-extension claude-usage-bar-0.2.0.vsix
+code --install-extension claude-usage-bar-0.3.0.vsix
 ```
 
 Reload VS Code. The item appears at the right of the status bar. Click it, or run **Claude Code: Open usage dashboard**.
 
-Optional setting: `claudeUsageBar.userName` (defaults to your global `git user.name`).
+Settings (all optional):
+
+| Setting | Default | What it does |
+|---|---|---|
+| `claudeUsageBar.userName` | global `git user.name` | Name shown in the dashboard. |
+| `claudeUsageBar.pollIntervalMs` | `2000` | Refresh interval (min 1000). |
+| `claudeUsageBar.notifications` | `true` | Warn when a plan limit crosses a threshold. |
+| `claudeUsageBar.notifyAt` | `[80, 95]` | Usage percentages that trigger a warning. |
+
+Commands: **Claude Code: Open usage dashboard** and **Claude Code: Export usage history (CSV)**.
 
 ## Develop
 
 ```bash
+npm test                     # unit tests + coverage (Node 20+, no dependencies)
 node tools/preview.js dark   # writes tools/preview-dark.html with mock data
 ```
 
@@ -59,7 +69,9 @@ Open the generated file in a browser to iterate on the UI without VS Code.
 
 ```
 extension/
-  extension.js    status bar item, polling, notifications
+  extension.js    status bar item, polling, notifications, CSV export
+  format.js       formatters shared by the host and the webview
+  history-csv.js  usage history to CSV
   activity.js     reads session + subagent transcripts (incremental, cached)
   panel.js        HTML skeleton
   analytics.js    pace, projections, insights
@@ -68,6 +80,7 @@ extension/
   flow-view.js    Git / Power BI workflow map
   webview.js      rendering and live updates
 mod/usage-band/   the Claude Code mod
+test/             node:test suites (analytics, activity, format, CSV, panel)
 ```
 
 ## Notes and limits

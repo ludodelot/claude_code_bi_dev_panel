@@ -4,17 +4,18 @@
   --s2: #d95926;
   --s3: #199e70;
   --s4: #c98500;
-  --ok: #3fb950;
-  --warn: #d29922;
-  --hot: #f85149;
-  --info: #58a6ff;
+  --ok: var(--vscode-testing-iconPassed, #3fb950);
+  --warn: var(--vscode-editorWarning-foreground, #d29922);
+  --hot: var(--vscode-editorError-foreground, #f85149);
+  --info: var(--vscode-textLink-foreground, #58a6ff);
   --accent: #d97757;
   --card-bg: color-mix(in srgb, var(--fg) 5%, transparent);
   --card-border: color-mix(in srgb, var(--fg) 14%, transparent);
   --track: color-mix(in srgb, var(--fg) 16%, transparent);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
-body.vscode-light { --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --info: #0969da; }
+body.vscode-light { --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; }
+body.vscode-high-contrast, body.vscode-high-contrast-light { --card-border: var(--vscode-contrastBorder, currentColor); --card-bg: transparent; }
 * { box-sizing: border-box; }
 body {
   font-family: var(--vscode-font-family);

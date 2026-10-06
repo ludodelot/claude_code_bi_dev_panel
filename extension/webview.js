@@ -427,6 +427,25 @@ window.addEventListener('message', e => {
   model = { state: e.data.state, history: e.data.history || [], user: e.data.user || '', activity: e.data.activity || null }
   render()
 })
+// Highlight the nav pill of the section currently in view.
+function wireScrollSpy() {
+  const links = [...document.querySelectorAll('.toc a')]
+  if (!links.length || typeof IntersectionObserver === 'undefined') return
+  const observer = new IntersectionObserver(
+    entries => {
+      const visible = entries.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
+      if (!visible) return
+      links.forEach(a => a.classList.toggle('on', a.dataset.sec === visible.target.id))
+    },
+    { rootMargin: '-64px 0px -70% 0px' },
+  )
+  links.forEach(a => {
+    const target = document.getElementById(a.dataset.sec)
+    if (target) observer.observe(target)
+  })
+}
+
 wireBurnTabs()
+wireScrollSpy()
 setInterval(renderLive, 1000)
 vscode.postMessage('ready')

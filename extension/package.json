@@ -2,7 +2,7 @@
   "name": "claude-usage-bar",
   "displayName": "Claude Code · Business Intelligence Developer",
   "description": "Live dashboard for Claude Code: plan limits (5h / 7d), tokens, subagents, token burners per task, and the Git + Power BI workflow you are working on. Reads data from the usage-band mod. by DELOT (v)",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "ludovic",
   "engines": {
     "vscode": "^1.80.0"
@@ -19,6 +19,10 @@
       {
         "command": "claudeUsageBar.open",
         "title": "Claude Code: Open usage dashboard"
+      },
+      {
+        "command": "claudeUsageBar.exportHistory",
+        "title": "Claude Code: Export usage history (CSV)"
       }
     ],
     "configuration": {
@@ -28,6 +32,30 @@
           "type": "string",
           "default": "",
           "description": "Name shown in the dashboard. Empty uses your global git user.name."
+        },
+        "claudeUsageBar.pollIntervalMs": {
+          "type": "number",
+          "default": 2000,
+          "minimum": 1000,
+          "description": "How often (ms) the status bar and panel refresh. Minimum 1000."
+        },
+        "claudeUsageBar.notifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a warning when a plan limit crosses a threshold."
+        },
+        "claudeUsageBar.notifyAt": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "default": [
+            80,
+            95
+          ],
+          "description": "Usage percentages that trigger a notification."
         }
       }
     }
@@ -36,6 +64,24 @@
   "author": "DELOT (v)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ludodelot/claude_code_bi_dev_panel.git"
+    "url": "https://github.com/ludodelot/claude_code_bi_dev_full.git"
+  },
+  "keywords": [
+    "claude",
+    "claude code",
+    "usage",
+    "tokens",
+    "dashboard",
+    "power bi",
+    "pbip",
+    "git"
+  ],
+  "bugs": {
+    "url": "https://github.com/ludodelot/claude_code_bi_dev_full/issues"
+  },
+  "scripts": {
+    "test": "node --test ../test/",
+    "preview": "node ../tools/preview.js dark",
+    "package": "npx @vscode/vsce package --allow-missing-repository --no-dependencies"
   }
 }

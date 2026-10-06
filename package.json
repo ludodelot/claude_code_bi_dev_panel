@@ -1,0 +1,10 @@
+{
+  "name": "claude-code-bi-dev-full",
+  "private": true,
+  "version": "0.3.0",
+  "license": "Apache-2.0",
+  "scripts": {
+    "test": "node --test --experimental-test-coverage",
+    "preview": "node tools/preview.js dark"
+  }
+}
