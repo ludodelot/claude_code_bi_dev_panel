@@ -31,5 +31,11 @@
         }
       }
     }
+  },
+  "license": "Apache-2.0",
+  "author": "DELOT (v)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ludodelot/claude_code_bi_dev_panel.git"
   }
 }

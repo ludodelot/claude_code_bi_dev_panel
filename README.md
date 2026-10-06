@@ -83,4 +83,6 @@ Panel en vivo para Claude Code dentro de VS Code: límites del plan (5 h / 7 d),
 
 ## License
 
-MIT © DELOT (v)
+Apache-2.0 © DELOT (v). See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+You can use, modify and redistribute this freely, including commercially. Keep the license and the NOTICE file with your copies.
