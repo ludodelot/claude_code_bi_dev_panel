@@ -64,7 +64,7 @@
   "author": "DELOT (v)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ludodelot/claude_code_bi_dev_full.git"
+    "url": "https://github.com/ludodelot/claude_code_bi_dev_panel.git"
   },
   "keywords": [
     "claude",
@@ -77,7 +77,7 @@
     "git"
   ],
   "bugs": {
-    "url": "https://github.com/ludodelot/claude_code_bi_dev_full/issues"
+    "url": "https://github.com/ludodelot/claude_code_bi_dev_panel/issues"
   },
   "scripts": {
     "test": "node --test ../test/",
