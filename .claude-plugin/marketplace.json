@@ -1,0 +1,21 @@
+{
+  "name": "claude-usage-panel",
+  "owner": {
+    "name": "DELOT (v)"
+  },
+  "metadata": {
+    "description": "A live dashboard for Claude Code: plan limits, forecast, agents, tokens and suggested next steps."
+  },
+  "plugins": [
+    {
+      "name": "usage-panel-tools",
+      "source": "./plugins/usage-panel-tools",
+      "description": "Skills to report issues or ideas to the project and to install or update the VS Code panel. Install this one first: it works on any Claude Code version."
+    },
+    {
+      "name": "usage-band",
+      "source": "./mod/usage-band",
+      "description": "The data feed for the panel and a band above the prompt (session time, tokens, context, 5h/7d limits). Needs a Claude Code version that supports mods."
+    }
+  ]
+}

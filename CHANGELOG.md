@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.0
+
+### Added
+- **Easy install from Claude Code**: this repository is now a Claude Code marketplace. `/plugin marketplace add ludodelot/claude_code_bi_dev_panel`, then install `usage-panel-tools` and `usage-band`.
+- **Skills for Claude**: `install-panel` (download, verify and install or update the VS Code panel) and `report-issue` (draft a redacted, public GitHub issue and send it only after the user approves). Claude is told to mention it once if it sees the panel misbehave.
+- **Self-update**: the panel checks the public release list once a day and offers Update now (SHA-256 verified), Release notes or Later. New setting `claudeUsageBar.checkForUpdates`; command **Check for panel updates**.
+- **Report from VS Code**: command and panel footer link that open a pre-filled GitHub draft with versions and recent log lines, with home folder, account name, e-mails and tokens redacted.
+- The installed **version is always visible** (title, footer, status bar tooltip) and an update button appears next to it.
+- Output channel **Claude Code panel** with recent log lines.
+- GitHub issue templates and a release workflow that publishes the .vsix with SHA256SUMS on every `v*` tag.
+
+### Changed
+- The **7-day forecast uses the average spend per day** of the window instead of the last hours, so nights and idle stretches do not hide or exaggerate the pace. The 5-hour forecast still follows the recent pace.
+- Mod `usage-band` 0.2.0 (manifest metadata only).
+
 ## 0.5.0
 
 ### Added

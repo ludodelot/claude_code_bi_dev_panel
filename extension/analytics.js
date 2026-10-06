@@ -7,6 +7,8 @@ const ACTIVE_MS = 20000
 const MIN_SLOPE_SPAN_MS = 3 * 60000
 const RESET_MATCH_MS = 60000
 const HOUR_MS = 3600000
+const DAY_MS = 24 * HOUR_MS
+const MIN_DAILY_SPAN_MS = DAY_MS
 const MIN_RATE_SPAN_MS = 2 * 60000
 const GOOD_CACHE_HIT = 80
 const LOW_CACHE_HIT = 50
@@ -43,6 +45,13 @@ function slopeOf(kind, pts) {
   return dt >= MIN_SLOPE_SPAN_MS && last.v > first.v ? (last.v - first.v) / dt : 0
 }
 
+// The weekly limit is judged by the average spend per day since the window opened, so nights and idle
+// stretches count as part of the rhythm. Under one day of data the span is floored to avoid wild projections.
+function dailyAverageSlope(percentUsed, start, now) {
+  const elapsed = Math.max(now - start, MIN_DAILY_SPAN_MS)
+  return percentUsed > 0 ? percentUsed / elapsed : 0
+}
+
 function paceInfo(history, kind, state) {
   const limit = limitOf(state, kind)
   if (!limit || !limit.resetsAt) return null
@@ -50,13 +59,14 @@ function paceInfo(history, kind, state) {
   const start = end - WINDOW_MS[kind]
   const pts = pointsFor(history, kind, limit, state)
   const last = pts[pts.length - 1]
-  const slope = pts.length >= 2 ? slopeOf(kind, pts) : 0
+  const slope = kind === 'seven' ? dailyAverageSlope(last.v, start, last.t) : pts.length >= 2 ? slopeOf(kind, pts) : 0
   const timeTo100 = slope > 0 ? last.t + (100 - last.v) / slope : Infinity
   const projEnd = Math.min(timeTo100, end)
   const projP = slope > 0 ? last.v + slope * (projEnd - last.t) : last.v
   const evenPace = clamp((Date.now() - start) / (end - start), 0, 1) * 100
   return {
     limit, start, end, pts, last, slope, timeTo100, projEnd, projP,
+    avgPerDay: slope * DAY_MS,
     willHit: timeTo100 < end,
     aheadOfEven: limit.percentUsed - evenPace,
   }
@@ -98,11 +108,12 @@ function paceInsight(kind, info) {
       icon: 'flame',
       tone: eta < HOUR_MS ? 'hot' : 'warn',
       title: name + ' may run out',
-      text: 'At the current pace you hit 100% in about ' + fmt.span(eta) + ', before it resets.',
+      text: (kind === 'seven' ? 'Averaging ' + Math.round(info.avgPerDay) + '% per day, ' : 'At the current pace ') + 'you hit 100% in about ' + fmt.span(eta) + ', before it resets.',
     }
   }
   if (info.slope > 0) {
-    return { icon: 'trend', tone: 'ok', title: name + ' on track', text: 'Projected to end this window around ' + Math.round(info.projP) + '%.' }
+    const rhythm = kind === 'seven' ? 'Averaging ' + Math.round(info.avgPerDay) + '% per day, projected' : 'Projected'
+    return { icon: 'trend', tone: 'ok', title: name + ' on track', text: rhythm + ' to end this window around ' + Math.round(info.projP) + '%.' }
   }
   return { icon: 'check', tone: 'ok', title: name + ' steady', text: 'No recent growth, so there is plenty of room.' }
 }

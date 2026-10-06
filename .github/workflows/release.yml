@@ -1,0 +1,36 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Tag must match the extension version
+        run: |
+          version="$(node -p "require('./extension/package.json').version")"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match extension/package.json version $version" >&2
+            exit 1
+          fi
+      - run: npm test
+      - name: Package the extension
+        working-directory: extension
+        run: npx --yes @vscode/vsce package --allow-missing-repository --no-dependencies
+      - name: Checksums
+        working-directory: extension
+        run: sha256sum claude-usage-bar-*.vsix > SHA256SUMS
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" extension/claude-usage-bar-*.vsix extension/SHA256SUMS \
+            --title "$GITHUB_REF_NAME" --generate-notes

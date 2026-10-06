@@ -1,6 +1,12 @@
 {
   "name": "usage-band",
-  "version": "0.1.0",
-  "description": "Band above the prompt: session time, tokens, context %, and 5h/7d plan limits for Claude subscription accounts",
-  "types": "./types/index.d.ts"
+  "version": "0.2.0",
+  "description": "Band above the prompt and data feed for the Claude Code panel in VS Code: session time, tokens, context %, 5h/7d plan limits.",
+  "types": "./types/index.d.ts",
+  "homepage": "https://github.com/ludodelot/claude_code_bi_dev_panel",
+  "repository": "https://github.com/ludodelot/claude_code_bi_dev_panel",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "DELOT (v)"
+  }
 }

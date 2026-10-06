@@ -1,5 +1,5 @@
 // Renders extension/panel.js with mock data into tools/preview-<theme>.html (open it in a browser).
-// Usage: node tools/preview.js dark|light
+// Usage: node tools/preview.js dark|light [update]   (add "update" to show the update button)
 const fs=require('fs'),os=require('os'),path=require('path')
 const {panelHtml}=require(path.join(__dirname,'..','extension','panel.js'))
 const theme=process.argv[2]||'dark'
@@ -24,7 +24,7 @@ const activity={scannedAt:now,sessions:[{id:'s1',title:'Sales dashboard refactor
  {id:'a3',sessionId:'s1',sessionTitle:'Sales dashboard refactor',description:'Write unit tests for DAX helpers',type:'tdd-guide',depth:1,model:'claude-sonnet-5',status:'done',start:now-30*60000,last:now-22*60000,tokens:T(10,6100,520000,40000),tools:19,lastTool:'Write · dax.test.ts',burned:46110},
  {id:'a4',sessionId:'s1',sessionTitle:'Sales dashboard refactor',description:'Scan repo for secrets',type:'security-reviewer',depth:1,model:'claude-haiku-4-5',status:'stale',start:now-3*3600000,last:now-2.9*3600000,tokens:T(3,700,60000,9000),tools:6,lastTool:'Grep · api_key',burned:9703}]}
 let html=panelHtml()
-const stub=`window.acquireVsCodeApi=()=>({postMessage:m=>{if(m==='ready')setTimeout(()=>window.postMessage(${JSON.stringify({state,history,user:'Ludovic',activity})},'*'),50)}});`
+const stub=`window.acquireVsCodeApi=()=>({postMessage:m=>{if(m==='ready')setTimeout(()=>window.postMessage(${JSON.stringify({state,history,user:'Ludovic',version:'0.6.0',update:process.argv[3]==='update'?{version:'0.7.0',notesUrl:'https://github.com'}:null,activity})},'*'),50)}});`
 html=html.replace(/(<script nonce="[^"]+">)/,'$1'+stub)
 const bg=theme==='dark'?'#1e1e1e':'#ffffff',fg=theme==='dark'?'#cccccc':'#333333'
 html=html.replace('<body>',`<body class="vscode-${theme}" style="background:${bg};--vscode-editor-foreground:${fg};--vscode-foreground:${fg};--vscode-editor-background:${bg};--vscode-font-family:Segoe UI,sans-serif">`)

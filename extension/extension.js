@@ -7,6 +7,10 @@ const { panelHtml } = require('./panel')
 const { scanActivity } = require('./activity')
 const { historyToCsv } = require('./history-csv')
 const { span: formatSpan, tokens: formatTokens } = require('./format')
+const { createLogger } = require('./logger')
+const { createUpdater } = require('./updater')
+const { reportIssue } = require('./report')
+const { REPO_URL } = require('./meta')
 
 const DATA_DIR = path.join(os.homedir(), '.claude', 'usage-band')
 const STATE_FILE = path.join(DATA_DIR, 'state.json')
@@ -31,6 +35,13 @@ let activity = null
 let activityKey = ''
 let lastActivityScan = 0
 const notified = new Set()
+const UPDATE_POLL_MS = 3600 * 1000
+const FIRST_UPDATE_CHECK_MS = 15 * 1000
+
+let log = createLogger()
+let updater = null
+let updateInfo = { status: 'not checked yet', release: null }
+let version = ''
 
 const settings = () => {
   const cfg = vscode.workspace.getConfiguration('claudeUsageBar')
@@ -68,7 +79,7 @@ const saveHistory = () => {
     fs.mkdirSync(DATA_DIR, { recursive: true })
     fs.writeFileSync(HISTORY_FILE, JSON.stringify(history))
   } catch (error) {
-    console.error('claude-usage-bar: could not save history', error)
+    log.error('Could not save history', error)
   }
 }
 
@@ -133,7 +144,7 @@ const refreshActivity = () => {
     activityKey = key
     return changed
   } catch (error) {
-    console.error('claude-usage-bar: activity scan failed', error)
+    log.error('Activity scan failed', error)
     return false
   }
 }
@@ -165,7 +176,8 @@ const detectedLine = w => {
 const tooltipFor = s => {
   const md = new vscode.MarkdownString(undefined, true)
   const now = Date.now()
-  md.appendMarkdown(`**Claude Code · ${userName()}**\n\n`)
+  md.appendMarkdown(`**Claude Code · v${version} · ${userName()}**\n\n`)
+  if (updateInfo.release) md.appendMarkdown(`⬆ Update available: v${updateInfo.release.version}\n\n`)
   for (const l of s.limits || []) {
     const reset = l.resetsAt ? ` — resets in ${formatSpan(Date.parse(l.resetsAt) - now)}` : ''
     md.appendMarkdown(`- ${LIMIT_LABELS[l.kind] || l.kind} limit: ${Math.round(l.percentUsed)}%${reset}\n`)
@@ -219,7 +231,16 @@ const notifyThresholds = s => {
 }
 
 const postToPanel = () => {
-  if (panel) panel.webview.postMessage({ state, history: state ? historyForPanel(state) : [], user: userName(), activity })
+  if (!panel) return
+  const update = updateInfo.release ? { version: updateInfo.release.version, notesUrl: updateInfo.release.notesUrl } : null
+  panel.webview.postMessage({ state, history: state ? historyForPanel(state) : [], user: userName(), activity, version, update })
+}
+
+// One line for issue reports: whether the mod is feeding data, never the data itself.
+const modDataSummary = () => {
+  if (!state) return 'no state.json found (mod not running or no message sent yet)'
+  const ageSeconds = Math.round((Date.now() - state.updatedAt) / 1000)
+  return (ageSeconds * 1000 > STALE_MS ? 'stale' : 'fresh') + ' (' + ageSeconds + 's old), limits: ' + ((state.limits || []).length ? 'present' : 'missing')
 }
 
 // Only slash commands (e.g. /compact) may be copied from the webview.
@@ -243,6 +264,10 @@ const openPanel = () => {
   panel.webview.html = panelHtml()
   panel.webview.onDidReceiveMessage(message => {
     if (message === 'ready') postToPanel()
+    else if (message === 'update') updater.apply()
+    else if (message === 'report') vscode.commands.executeCommand('claudeUsageBar.reportIssue')
+    else if (message === 'check') vscode.commands.executeCommand('claudeUsageBar.checkForUpdates')
+    else if (message === 'repo') vscode.commands.executeCommand('claudeUsageBar.openRepository')
     else if (message && isSafeCommand(message.copy)) copyCommand(message.copy)
     else if (message && message.open && /^https:\/\/github\.com\//.test(message.open)) {
       vscode.env.openExternal(vscode.Uri.parse(message.open))
@@ -283,6 +308,16 @@ const tick = item => () => {
 }
 
 function activate(context) {
+  const channel = vscode.window.createOutputChannel('Claude Code panel')
+  log = createLogger(channel)
+  version = context.extension.packageJSON.version
+  log.info('Activated v' + version)
+  updater = createUpdater(context, log, result => {
+    updateInfo = result
+    postToPanel()
+  })
+  const reportDeps = { context, log, getModData: modDataSummary, getUpdateStatus: () => updateInfo.status }
+
   const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100)
   item.command = 'claudeUsageBar.open'
   loadHistory()
@@ -298,9 +333,16 @@ function activate(context) {
   }
   startTimer()
 
+  // The check itself is throttled to once a day and can be switched off in settings.
+  const firstCheck = setTimeout(() => updater.check(), FIRST_UPDATE_CHECK_MS)
+  const updateTimer = setInterval(() => updater.check(), UPDATE_POLL_MS)
+
   context.subscriptions.push(
     item,
+    channel,
     { dispose: () => clearInterval(timer) },
+    { dispose: () => clearTimeout(firstCheck) },
+    { dispose: () => clearInterval(updateTimer) },
     vscode.workspace.onDidChangeConfiguration(event => {
       if (event.affectsConfiguration('claudeUsageBar')) {
         startTimer()
@@ -309,6 +351,9 @@ function activate(context) {
     }),
     vscode.commands.registerCommand('claudeUsageBar.open', openPanel),
     vscode.commands.registerCommand('claudeUsageBar.exportHistory', exportHistory),
+    vscode.commands.registerCommand('claudeUsageBar.checkForUpdates', () => updater.check({ manual: true })),
+    vscode.commands.registerCommand('claudeUsageBar.reportIssue', () => reportIssue(reportDeps)),
+    vscode.commands.registerCommand('claudeUsageBar.openRepository', () => vscode.env.openExternal(vscode.Uri.parse(REPO_URL))),
   )
 }
 

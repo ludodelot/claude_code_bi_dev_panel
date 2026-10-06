@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask Claude Code to report it for you
+    url: https://github.com/ludodelot/claude_code_bi_dev_panel#report-a-problem-or-an-idea
+    about: With the usage-panel-tools plugin installed, tell Claude "report this issue" and it drafts a redacted issue for your approval.

@@ -30,7 +30,8 @@ const Adv = (() => {
     if (!info) return { kind, name, available: false, tone: 'info', headline: 'No reading yet', detail: 'Send a message in Claude Code to start the forecast.' }
     const pct = info.limit.percentUsed
     const reset = base.fmt.span(info.end - now)
-    const common = { kind, name, available: true, pct, projPct: info.projP, resetAt: info.end, resetLabel: timeLabel(kind, info.end), resetIn: reset, willHit: info.willHit, slope: info.slope }
+    const rhythm = kind === 'seven' ? 'Averaging ' + Math.round(info.avgPerDay) + '% per day. ' : ''
+    const common = { kind, name, available: true, pct, rhythm, avgPerDay: info.avgPerDay, projPct: info.projP, resetAt: info.end, resetLabel: timeLabel(kind, info.end), resetIn: reset, willHit: info.willHit, slope: info.slope }
     if (pct >= 100) return { ...common, tone: 'hot', headline: 'Limit reached', detail: 'Resets in ' + reset + ' (' + common.resetLabel + ').' }
     if (info.willHit) {
       const eta = info.timeTo100 - now
@@ -42,13 +43,13 @@ const Adv = (() => {
         hitLabel: timeLabel(kind, info.timeTo100),
         earlyBy: base.fmt.span(early),
         headline: 'Runs out ' + timeLabel(kind, info.timeTo100),
-        detail: 'In ' + base.fmt.span(eta) + ', ' + base.fmt.span(early) + ' before it resets.',
+        detail: rhythm + 'In ' + base.fmt.span(eta) + ', ' + base.fmt.span(early) + ' before it resets.',
       }
     }
     if (info.slope > 0) {
-      return { ...common, tone: 'ok', headline: 'Lasts until reset', detail: 'Projected ' + Math.round(info.projP) + '% when it resets in ' + reset + '.' }
+      return { ...common, tone: 'ok', headline: 'Lasts until reset', detail: rhythm + 'Projected ' + Math.round(info.projP) + '% when it resets in ' + reset + '.' }
     }
-    return { ...common, tone: 'ok', headline: 'Steady', detail: 'No recent growth. Resets in ' + reset + '.' }
+    return { ...common, tone: 'ok', headline: 'Steady', detail: 'No usage yet in this window. Resets in ' + reset + '.' }
   }
 
   const item = (id, tone, icon, title, why, command) => ({ id, tone, icon, title, why, command: command || null })
@@ -68,7 +69,7 @@ const Adv = (() => {
     const nearEnd = forecast.pct >= LIMIT_NEAR_END
     const why = nearEnd
       ? 'At ' + Math.round(forecast.pct) + '% already. Move routine work to a lighter model.'
-      : 'At this pace it runs out ' + forecast.hitLabel + ', ' + forecast.earlyBy + ' before it resets at ' + forecast.resetLabel + '. Move routine work to a lighter model or pause until then.'
+      : (forecast.kind === 'seven' ? 'At your average of ' + Math.round(forecast.avgPerDay) + '% per day it runs out ' : 'At this pace it runs out ') + forecast.hitLabel + ', ' + forecast.earlyBy + ' before it resets at ' + forecast.resetLabel + '. Move routine work to a lighter model or pause until then.'
     return item(kind + '-hit', forecast.tone, 'flame', name + ' may run out', why, '/model')
   }
 

@@ -153,3 +153,13 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 .advisor .insight { align-items: center; }
 .advisor .in-body { flex: 1; min-width: 0; }
 .btn.cmd { font-family: var(--vscode-editor-font-family, monospace); font-weight: 650; flex: none; }
+
+/* Version, update button and footer */
+.by { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.ver-chip { font-size: 0.78em; padding: 1px 9px; border-radius: 99px; border: 1px solid var(--card-border); background: var(--card-bg); font-variant-numeric: tabular-nums; }
+.update-btn { padding: 1px 10px; font-size: 0.78em; color: var(--ok); border-color: color-mix(in srgb, var(--ok) 55%, transparent); }
+.foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--card-border); font-size: 0.82em; }
+.foot .link { background: none; border: 0; padding: 0; color: var(--vscode-textLink-foreground, var(--info)); cursor: pointer; font: inherit; }
+.foot .link:hover { text-decoration: underline; }
+
+[hidden] { display: none !important; }

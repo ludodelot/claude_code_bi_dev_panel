@@ -2,7 +2,7 @@
   "name": "claude-usage-bar",
   "displayName": "Claude Code · Business Intelligence Developer",
   "description": "Live dashboard for Claude Code: plan limits (5h / 7d), tokens, subagents, token burners per task, and the Git + Power BI workflow you are working on. Reads data from the usage-band mod. by DELOT (v)",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "publisher": "ludovic",
   "engines": {
     "vscode": "^1.80.0"
@@ -23,6 +23,18 @@
       {
         "command": "claudeUsageBar.exportHistory",
         "title": "Claude Code: Export usage history (CSV)"
+      },
+      {
+        "command": "claudeUsageBar.checkForUpdates",
+        "title": "Claude Code: Check for panel updates"
+      },
+      {
+        "command": "claudeUsageBar.reportIssue",
+        "title": "Claude Code: Report an issue or idea about this panel"
+      },
+      {
+        "command": "claudeUsageBar.openRepository",
+        "title": "Claude Code: Open the panel project on GitHub"
       }
     ],
     "configuration": {
@@ -56,6 +68,11 @@
             95
           ],
           "description": "Usage percentages that trigger a notification."
+        },
+        "claudeUsageBar.checkForUpdates": {
+          "type": "boolean",
+          "default": true,
+          "description": "Once a day, ask GitHub whether a newer version of this panel exists and offer to install it. Only the public release list is requested; no usage data is sent."
         }
       }
     }

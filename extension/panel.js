@@ -133,7 +133,7 @@ const BODY = `
         <div class="brand-text">
           <h1>Claude Code</h1>
           <div class="role">${icon('chart')}Business Intelligence Developer</div>
-          <div class="by">by <b>DELOT</b> <span class="v">(v)</span></div>
+          <div class="by">by <b>DELOT</b> <span class="v">(v)</span> <span id="ver" class="ver-chip" title="Installed version">v…</span><button id="updateBtn" class="btn update-btn" hidden></button></div>
         </div>
       </div>
       <div class="hero-side">
@@ -162,6 +162,12 @@ const BODY = `
     ${section('trend', 'This session over time', `<section class="grid2">${trend('trendC', 'Context window used', 'layers')}${trend('trendU', 'API-equivalent value', 'dollar')}</section>`)}
     ${section('folder', 'Power BI projects &amp; GitHub repos', '<section id="projects"></section>')}
     ${section('file', 'Changes this session', '<section id="changes"></section>')}
+    <footer class="foot muted">
+      <span id="footVer">Claude Code panel</span>
+      <button class="link" data-act="report">Report an issue or idea</button>
+      <button class="link" data-act="check">Check for updates</button>
+      <button class="link" data-act="repo">GitHub</button>
+    </footer>
   </main>`
 
 function panelHtml() {

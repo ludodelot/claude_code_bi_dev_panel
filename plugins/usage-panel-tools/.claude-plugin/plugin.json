@@ -1,0 +1,11 @@
+{
+  "name": "usage-panel-tools",
+  "version": "0.1.0",
+  "description": "Skills for the Claude Code usage panel: report an issue or idea to the project, and install or update the VS Code panel. Works on any Claude Code version with plugin support.",
+  "author": {
+    "name": "DELOT (v)"
+  },
+  "homepage": "https://github.com/ludodelot/claude_code_bi_dev_panel",
+  "repository": "https://github.com/ludodelot/claude_code_bi_dev_panel",
+  "license": "Apache-2.0"
+}

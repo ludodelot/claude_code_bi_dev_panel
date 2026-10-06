@@ -12,7 +12,7 @@ const BADGE_TEXT = { ok: 'Comfortable', warn: 'Watch it', hot: 'Critical' }
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
 const $ = id => document.getElementById(id)
 
-let model = { state: null, history: [], user: '', activity: null }
+let model = { state: null, history: [], user: '', activity: null, version: '', update: null }
 let projectsKey = ''
 let changesKey = ''
 
@@ -425,9 +425,29 @@ function render() {
 }
 
 window.addEventListener('message', e => {
-  model = { state: e.data.state, history: e.data.history || [], user: e.data.user || '', activity: e.data.activity || null }
+  model = {
+    state: e.data.state, history: e.data.history || [], user: e.data.user || '', activity: e.data.activity || null,
+    version: e.data.version || '', update: e.data.update || null,
+  }
+  renderVersion()
   render()
 })
+
+// The installed version is always visible; an update shows up as a button next to it.
+function renderVersion() {
+  const label = model.version ? 'v' + model.version : 'v?'
+  $('ver').textContent = label
+  $('footVer').textContent = 'Claude Code panel ' + label
+  const button = $('updateBtn')
+  button.hidden = !model.update
+  if (model.update) button.textContent = 'Update to v' + model.update.version
+}
+
+function wireFooter() {
+  $('updateBtn').addEventListener('click', () => vscode.postMessage('update'))
+  document.querySelectorAll('.foot [data-act]').forEach(b => b.addEventListener('click', () => vscode.postMessage(b.dataset.act)))
+}
+wireFooter()
 // Highlight the nav pill of the section currently in view.
 function wireScrollSpy() {
   const links = [...document.querySelectorAll('.toc a')]

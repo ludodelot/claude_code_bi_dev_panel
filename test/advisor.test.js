@@ -112,3 +112,33 @@ test('suggest sorts critical items first and caps the list', () => {
 test('suggest returns nothing without state', () => {
   assert.deepEqual(suggest({ state: null, history: [], activity: null, now: NOW }), [])
 })
+
+test('the 7-day forecast uses the daily average, so an idle night does not hide the pace', () => {
+  const state = stateWith({ limits: [limit('five_hour', 10, 3), limit('seven_day', 60, 72)] })
+  const sr = state.limits[1].resetsAt
+  const flatLastHours = [{ t: NOW - 6 * HOUR, s: 60, sr }, { t: NOW, s: 60, sr }]
+  const f = forecastFor('seven', flatLastHours, state, NOW)
+  assert.equal(Math.round(f.avgPerDay), 15)
+  assert.equal(f.willHit, true)
+  assert.match(f.detail, /Averaging 15% per day/)
+})
+
+test('the 7-day forecast does not exaggerate a burst at the start of the window', () => {
+  const state = stateWith({ limits: [limit('five_hour', 10, 3), limit('seven_day', 5, 24 * 6.9)] })
+  const f = forecastFor('seven', [], state, NOW)
+  assert.equal(f.willHit, false)
+  assert.equal(Math.round(f.avgPerDay), 5)
+})
+
+test('the 7-day forecast says nothing is used yet when the window is empty', () => {
+  const state = stateWith({ limits: [limit('five_hour', 10, 3), limit('seven_day', 0, 100)] })
+  const f = forecastFor('seven', [], state, NOW)
+  assert.equal(f.headline, 'Steady')
+})
+
+test('the 5-hour forecast still follows the recent pace, not the daily average', () => {
+  const state = stateWith({ limits: [limit('five_hour', 60, 4), limit('seven_day', 20, 100)] })
+  const f = forecastFor('five', climbing(state.limits[0].resetsAt), state, NOW)
+  assert.equal(f.rhythm, '')
+  assert.equal(f.willHit, true)
+})
