@@ -11,6 +11,7 @@ A live dashboard for [Claude Code](https://claude.com/claude-code) inside VS Cod
 | Section | What it shows |
 |---|---|
 | **Status bar** | `5h 68% · 7d 31% · ctx 47%` plus `$(organization) N` while subagents are running. Turns amber/red near the limits. |
+| **Forecast & next steps** | Time each plan limit runs out at your current pace, and suggested actions (/compact, /model, /clear…) with a copy button. |
 | **In use now** | The Git repo, branch, GitHub remote and Power BI project (PBIP, models, reports) each recent Claude Code session is working on, detected from its transcript. |
 | **KPI tiles** | API-equivalent value and $/hour, tokens processed (stacked bar), cache hit rate, session time. |
 | **Agents & tasks** | Subagents running right now (live timer, current tool call), finished and idle ones, plus **Top token burners** ranked across agents and prompts. |
@@ -42,7 +43,7 @@ Copy `mod/usage-band` to `~/.claude/skills/usage-band` (on Windows: `%USERPROFIL
 ```bash
 cd extension
 npx @vscode/vsce package --allow-missing-repository --no-dependencies
-code --install-extension claude-usage-bar-0.4.1.vsix
+code --install-extension claude-usage-bar-0.5.0.vsix
 ```
 
 Reload VS Code. The item appears at the right of the status bar. Click it, or run **Claude Code: Open usage dashboard**.
@@ -72,6 +73,8 @@ extension/
   extension.js    status bar item, polling, notifications, CSV export
   format.js       formatters shared by the host and the webview
   history-csv.js  usage history to CSV
+  advisor.js      forecast and suggestion rules (pure, tested)
+  forecast-view.js  forecast cards and suggestion list
   activity.js     reads session + subagent transcripts (incremental, cached)
   panel.js        HTML skeleton
   analytics.js    pace, projections, insights

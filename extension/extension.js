@@ -222,6 +222,15 @@ const postToPanel = () => {
   if (panel) panel.webview.postMessage({ state, history: state ? historyForPanel(state) : [], user: userName(), activity })
 }
 
+// Only slash commands (e.g. /compact) may be copied from the webview.
+const SAFE_COMMAND = /^\/[a-z][a-z-]{0,30}( [\w .-]{1,80})?$/
+const isSafeCommand = value => typeof value === 'string' && SAFE_COMMAND.test(value)
+
+const copyCommand = async command => {
+  await vscode.env.clipboard.writeText(command)
+  vscode.window.setStatusBarMessage('Copied ' + command + '. Paste it in Claude Code.', 4000)
+}
+
 const openPanel = () => {
   if (panel) {
     panel.reveal()
@@ -234,6 +243,7 @@ const openPanel = () => {
   panel.webview.html = panelHtml()
   panel.webview.onDidReceiveMessage(message => {
     if (message === 'ready') postToPanel()
+    else if (message && isSafeCommand(message.copy)) copyCommand(message.copy)
     else if (message && message.open && /^https:\/\/github\.com\//.test(message.open)) {
       vscode.env.openExternal(vscode.Uri.parse(message.open))
     }

@@ -5,7 +5,7 @@ const {panelHtml}=require(path.join(__dirname,'..','extension','panel.js'))
 const theme=process.argv[2]||'dark'
 const real={cwd:'C:/demo/sales-dashboard',desktopOpen:false}
 const now=Date.now()
-const state={...real,updatedAt:now-4000,startedAt:now-95*60000,usd:2.37,contextPercent:47,
+const state={...real,updatedAt:now-4000,startedAt:now-95*60000,usd:2.37,contextPercent:78,
  totals:{input:3200,output:41800,cacheRead:2850000,cacheWrite:186000},
  limits:[{kind:'five_hour',percentUsed:68,resetsAt:new Date(now+2.2*3600000).toISOString()},{kind:'seven_day',percentUsed:31,resetsAt:new Date(now+4.5*86400000).toISOString()}],
  changes:[{t:now-300000,tool:'Edit',kind:'model',area:'Sales.SemanticModel/definition/tables/Measures.tmdl',edited:1,added:3},{t:now-900000,tool:'Write',kind:'report',area:'Sales.Report/report.json',edited:0,added:0}],

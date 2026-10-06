@@ -2,7 +2,7 @@ const crypto = require('crypto')
 const fs = require('fs')
 const path = require('path')
 
-const SCRIPT_FILES = ['icons.js', 'format.js', 'analytics.js', 'charts.js', 'agents-view.js', 'inuse-view.js', 'webview.js']
+const SCRIPT_FILES = ['icons.js', 'format.js', 'analytics.js', 'advisor.js', 'charts.js', 'agents-view.js', 'inuse-view.js', 'forecast-view.js', 'webview.js']
 const STYLE_FILES = ['panel.css', 'panel-extra.css']
 const TICK_COUNT = 60
 const TOKEN_SLOTS = 4
@@ -118,6 +118,9 @@ const AGENT_CARD = `<div class="card agents"><div class="head"><span class="g-ic
 
 const BURN_CARD = `<div class="card burners"><div class="head"><span class="g-ico">${icon('flame')}</span><span class="label">Top token burners</span><div class="tabs mini-tabs"><button class="tab on" data-f="all">All</button><button class="tab" data-f="agent">Agents</button><button class="tab" data-f="task">Tasks</button></div></div><ol id="burnList" class="b-list"></ol></div>`
 
+const FORECAST = `<section id="forecastCards" class="grid2"></section>
+    <div class="card insights advisor"><div class="head"><span class="g-ico">${icon('bulb')}</span><span class="label">Suggested next steps</span></div><ul id="advisorList"></ul></div>`
+
 const BODY = `
   <div id="empty" class="muted" hidden>
     <h1>${LOGO}Claude Code</h1>
@@ -140,6 +143,8 @@ const BODY = `
     </header>
 
     <!--NAV-->
+
+    ${section('flame', 'Forecast &amp; next steps', FORECAST)}
 
     ${section('sparkles', 'In use now', '<section id="inUse" class="inuse-grid"></section>')}
 

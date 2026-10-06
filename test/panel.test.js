@@ -16,3 +16,9 @@ test('panelHtml uses a fresh nonce per call', () => {
   const nonce = h => h.match(/nonce-([0-9a-f]+)/)[1]
   assert.notEqual(nonce(panelHtml()), nonce(panelHtml()))
 })
+
+test('the concatenated webview script parses (no duplicate top-level declarations)', () => {
+  const html = panelHtml()
+  const script = html.slice(html.indexOf('<script nonce='), html.lastIndexOf('</script>')).replace(/^<script nonce="[^"]+">/, '')
+  assert.doesNotThrow(() => new Function(script))
+})

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0
+
+### Added
+- **Forecast & next steps** at the top of the panel: for the 5-hour and 7-day limits, the time each one runs out at your current pace, how long before the reset that happens, and a bar showing usage now and where it is heading.
+- **Suggested next steps**: rules that read your usage and propose Claude Code actions, with one-click copy for slash commands. Covers /compact (context 70%+ and 85%+), /model when a limit will run out, /clear on long sessions, low cache reuse, exploration agents running on Opus, too many parallel agents and prompts that dominate the session.
+- Test that the assembled webview script parses, to catch duplicate declarations between scripts.
+
 ## 0.4.1
 
 ### Removed
