@@ -1,0 +1,35 @@
+{
+  "name": "claude-usage-bar",
+  "displayName": "Claude Code · Business Intelligence Developer",
+  "description": "Live dashboard for Claude Code: plan limits (5h / 7d), tokens, subagents, token burners per task, and the Git + Power BI workflow you are working on. Reads data from the usage-band mod. by DELOT (v)",
+  "version": "0.2.0",
+  "publisher": "ludovic",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "claudeUsageBar.open",
+        "title": "Claude Code: Open usage dashboard"
+      }
+    ],
+    "configuration": {
+      "title": "Claude Code Usage",
+      "properties": {
+        "claudeUsageBar.userName": {
+          "type": "string",
+          "default": "",
+          "description": "Name shown in the dashboard. Empty uses your global git user.name."
+        }
+      }
+    }
+  }
+}

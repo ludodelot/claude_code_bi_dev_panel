@@ -1,0 +1,6 @@
+{
+  "name": "usage-band",
+  "version": "0.1.0",
+  "description": "Band above the prompt: session time, tokens, context %, and 5h/7d plan limits for Claude subscription accounts",
+  "types": "./types/index.d.ts"
+}

@@ -1,0 +1,6 @@
+node_modules/
+*.vsix
+tools/preview-*.html
+state.json
+history.json
+.DS_Store
